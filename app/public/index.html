@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thumbnail Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Thumbnail Studio</h1>
+    <span class="step-note">Step 1: blank canvas and export</span>
+  </header>
+
+  <main class="layout">
+    <!-- Left: settings for this design -->
+    <aside class="panel">
+      <label class="field">
+        <span>Design name</span>
+        <input id="design-name" type="text" value="my first thumbnail" autocomplete="off">
+        <small>Saved as: <code id="design-slug"></code></small>
+      </label>
+
+      <label class="field">
+        <span>Background color</span>
+        <span class="color-row">
+          <input id="bg-color" type="color" value="#1e293b">
+          <input id="bg-hex" type="text" value="#1e293b" maxlength="7" spellcheck="false">
+        </span>
+      </label>
+
+      <button id="export-btn" class="primary">Export for YouTube</button>
+      <button id="reveal-btn">Open exports folder</button>
+
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </aside>
+
+    <!-- Center: live preview of the thumbnail (16:9) -->
+    <section class="stage">
+      <div class="canvas-frame">
+        <canvas id="preview" width="1280" height="720"></canvas>
+      </div>
+      <p class="hint">Preview, scaled down. Exports are 3840 × 2160.</p>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+/* Thumbnail Studio — interface styles.
+   Colors are defined once here so the look is easy to change. */
+
+:root {
+  --bg: #f4f4f5;
+  --panel: #ffffff;
+  --text: #18181b;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --accent: #2563eb;
+  --accent-text: #ffffff;
+  --ok: #15803d;
+  --warn: #b45309;
+  --error: #b91c1c;
+  --stage: #e4e4e7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #18181b;
+    --panel: #27272a;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #3f3f46;
+    --accent: #3b82f6;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --error: #f87171;
+    --stage: #111113;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.topbar h1 { margin: 0; font-size: 17px; }
+.step-note { color: var(--muted); font-size: 13px; }
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 0;
+}
+
+.panel {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > span { font-weight: 600; }
+.field small { color: var(--muted); }
+
+input[type="text"] {
+  font: inherit;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+.color-row { display: flex; gap: 8px; align-items: center; }
+.color-row input[type="color"] {
+  width: 44px; height: 34px; padding: 2px;
+  border: 1px solid var(--border); border-radius: 6px; background: var(--bg);
+}
+.color-row input[type="text"] { flex: 1; font-family: ui-monospace, Menlo, monospace; }
+
+button {
+  font: inherit;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+button:hover { border-color: var(--muted); }
+button:disabled { opacity: 0.6; cursor: progress; }
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.status { font-size: 13px; }
+.status .ok { color: var(--ok); }
+.status .error { color: var(--error); }
+.status ul { margin: 6px 0 0; padding-left: 18px; }
+.status code { font-size: 12px; }
+
+.stage {
+  background: var(--stage);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-width: 0;
+}
+.canvas-frame {
+  width: 100%;
+  max-width: 1100px;
+  aspect-ratio: 16 / 9;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+.canvas-frame canvas { width: 100%; height: 100%; display: block; }
+.hint { color: var(--muted); font-size: 12px; }
