@@ -1,0 +1,8 @@
+# Your own files: logos, fonts, colors, templates, designs, exports.
+# Never committed to the repository.
+user-data/
+
+# macOS and editor clutter
+.DS_Store
+node_modules/
+*.log

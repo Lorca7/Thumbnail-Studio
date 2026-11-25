@@ -1,0 +1,13 @@
+{
+  "name": "thumbnail-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local tool for assembling, checking and exporting YouTube thumbnails.",
+  "scripts": {
+    "start": "node app/server.js --open",
+    "test": "node tests/e2e.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
