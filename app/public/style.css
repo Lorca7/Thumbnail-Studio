@@ -113,6 +113,8 @@ button.primary {
 .status ul { margin: 6px 0 0; padding-left: 18px; }
 .status code { font-size: 12px; }
 
+.data-dir { margin-top: auto; color: var(--muted); font-size: 12px; word-break: break-all; }
+
 .stage {
   background: var(--stage);
   display: flex;

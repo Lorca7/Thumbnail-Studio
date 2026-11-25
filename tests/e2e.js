@@ -1,23 +1,21 @@
-// End-to-end test: starts the studio with a throwaway data folder, opens it
-// in a headless browser, exports a thumbnail and checks the files on disk.
+// End-to-end test: opens the real app (Electron) with a throwaway files
+// folder, exports a thumbnail and checks the files on disk.
 //
 // For development only — you don't need this to use the studio.
-// Needs Playwright (`npm install playwright` then `npx playwright install chromium`).
+// Needs Playwright (`npm install playwright`). On Linux without a screen,
+// run it under xvfb-run.
 //
 //   node tests/e2e.js [screenshot-folder]
 
 'use strict';
 
-const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const assert = require('assert');
-const { chromium } = require('playwright');
+const { _electron: electron } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
-const PORT = 4399;
-const URL = `http://localhost:${PORT}`;
 const SHOTS = path.resolve(process.argv[2] || path.join(os.tmpdir(), 'thumbnail-studio-shots'));
 
 // Read width/height from a PNG file header.
@@ -39,46 +37,34 @@ function jpgSize(buf) {
   throw new Error('JPG size not found');
 }
 
-async function waitForServer() {
-  for (let i = 0; i < 50; i++) {
-    try {
-      const res = await fetch(`${URL}/api/info`);
-      if (res.ok) return;
-    } catch {}
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  throw new Error('Server did not start');
-}
-
 async function main() {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-data-'));
   fs.mkdirSync(SHOTS, { recursive: true });
-  const server = spawn(process.execPath, ['app/server.js'], {
-    cwd: ROOT,
-    env: { ...process.env, THUMBNAIL_STUDIO_DATA: dataDir, THUMBNAIL_STUDIO_PORT: String(PORT) },
-    stdio: 'inherit',
+  // Test the code in this folder, or a packaged app if PACKAGED_APP is set.
+  const packaged = process.env.PACKAGED_APP;
+  const app = await electron.launch({
+    executablePath: packaged || require(path.join(ROOT, 'node_modules', 'electron')),
+    args: [...(process.platform === 'linux' ? ['--no-sandbox'] : []), ...(packaged ? [] : [ROOT])],
+    env: { ...process.env, THUMBNAIL_STUDIO_DATA: dataDir },
   });
-  let browser;
   try {
-    await waitForServer();
+    const page = await app.firstWindow();
+    const errors = [];
+    page.on('pageerror', (err) => errors.push(err));
+    await page.setViewportSize({ width: 1280, height: 760 });
+    await page.waitForFunction(() => document.getElementById('data-dir').textContent.length > 0);
 
-    // Server checks: data folders created, unsafe names refused.
+    // The app created its folders and shows where they are.
     for (const sub of ['brand', 'templates', 'designs']) assert.ok(fs.existsSync(path.join(dataDir, sub)), `${sub}/ missing`);
-    const bad = await fetch(`${URL}/api/export?design=../evil&file=x.png`, { method: 'POST', body: 'x' });
-    assert.strictEqual(bad.status, 400, 'path tricks must be refused');
-    const outside = await fetch(`${URL}/../server.js`);
-    assert.notStrictEqual(outside.status, 200, 'files outside app/public must not be served');
-    const foreign = await new Promise((resolve, reject) => {
-      require('http').get({ host: '127.0.0.1', port: PORT, path: '/api/info', headers: { Host: 'evil.example' } },
-        (res) => { res.resume(); resolve(res.statusCode); }).on('error', reject);
-    });
-    assert.strictEqual(foreign, 403, 'requests for other host names must be refused');
-
-    browser = await chromium.launch();
-    const page = await browser.newPage({ viewport: { width: 1280, height: 760 }, deviceScaleFactor: 2 });
-    page.on('pageerror', (err) => { throw err; });
-    await page.goto(URL);
+    assert.strictEqual(await page.textContent('#data-dir'), dataDir);
     await page.screenshot({ path: path.join(SHOTS, '1-app-opened.png') });
+
+    // Safety: unsafe names are refused, and files outside app/public aren't served.
+    const refused = await page.evaluate(() =>
+      window.studio.saveExport('../evil', 'x.png', new Uint8Array([1]).buffer).then(() => false, () => true));
+    assert.ok(refused, 'unsafe design names must be refused');
+    const outside = await page.evaluate(() => fetch('studio://app/..%2fmain.js').then((r) => r.status, () => 'blocked'));
+    assert.notStrictEqual(outside, 200, 'files outside app/public must not be served');
 
     // Name the design and pick a background color.
     await page.fill('#design-name', 'Test Video #1');
@@ -105,12 +91,11 @@ async function main() {
     assert.deepStrictEqual(pngSize(pngBuf), { width: 3840, height: 2160 });
     assert.deepStrictEqual(jpgSize(jpgBuf), { width: 3840, height: 2160 });
     assert.ok(jpgBuf.length <= 2_000_000, 'JPG must be under 2 MB');
-    fs.copyFileSync(path.join(exportsDir, jpg), path.join(SHOTS, '4-exported-file.jpg'));
 
     // Worst case: pure random noise compresses terribly. The JPG must
     // still come out under 2 MB.
     const noise = await page.evaluate(async () => {
-      const { makeJpgUnderLimit } = await import('/js/export.js');
+      const { makeJpgUnderLimit } = await import('./js/export.js');
       const c = document.createElement('canvas');
       c.width = 3840; c.height = 2160;
       const ctx = c.getContext('2d');
@@ -123,10 +108,10 @@ async function main() {
     console.log('Noise JPG:', noise);
     assert.ok(noise.bytes <= 2_000_000 && noise.width >= 640);
 
+    assert.deepStrictEqual(errors, [], 'no errors in the window');
     console.log(`\nAll checks passed. Screenshots in ${SHOTS}`);
   } finally {
-    if (browser) await browser.close();
-    server.kill();
+    await app.close();
     fs.rmSync(dataDir, { recursive: true, force: true });
   }
 }

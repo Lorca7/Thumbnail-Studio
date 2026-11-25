@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Only load the app's own files; never anything from the internet. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob: data:; font-src 'self' blob: data:; style-src 'self' 'unsafe-inline'">
   <title>Thumbnail Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -33,6 +35,8 @@
       <button id="reveal-btn">Open exports folder</button>
 
       <div id="status" class="status" role="status" aria-live="polite"></div>
+
+      <p class="data-dir">Your files: <code id="data-dir"></code></p>
     </aside>
 
     <!-- Center: live preview of the thumbnail (16:9) -->
