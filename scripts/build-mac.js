@@ -6,6 +6,7 @@
 //   node scripts/build-mac.js            build for this Mac's chip
 //   node scripts/build-mac.js x64        build for Intel Macs
 //   node scripts/build-mac.js arm64      build for Apple silicon (M1, M2, …)
+//   node scripts/build-mac.js universal  one app for both (needs a Mac to build)
 
 'use strict';
 
