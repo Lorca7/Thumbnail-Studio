@@ -8,9 +8,10 @@ It's a regular app in your Applications folder with its own window. It runs
 entirely on your Mac, works with no internet connection, and never uploads
 anything.
 
-> **Status: Step 1 of 5.** The app opens, shows a 16:9 canvas with a
-> background color, and exports YouTube-ready files. Brand kit, templates and
-> editor, variants and the Lab come in the next steps.
+> **Status: Step 1.5.** Import your images (drag and drop or File → Import),
+> move, resize and layer them, add one line of text, and export YouTube-ready
+> files. Your designs aren't saved between sessions yet (autosave comes in Step 3),
+> but imported images are copied into the design's folder straight away.
 
 ---
 
@@ -78,7 +79,8 @@ Documents/Thumbnail Studio/
   brand/                your logos, fonts and brand.json (colors, text styles)
   templates/            one .json file per template
   designs/<name>/       one folder per thumbnail:
-    design.json           the design itself
+    images/               copies of the pictures you import (originals can be moved)
+    design.json           the design itself (from Step 3)
     exports/              finished files, ready to upload
 ```
 
@@ -93,9 +95,30 @@ macOS syncs it to iCloud like everything else in Documents.
 
 ## How to use it
 
-### Export (available now)
+### Images and layers
 
-1. Type a **Design name**. It becomes the folder and file name, cleaned up:
+1. **Bring in pictures:** drag PNG or JPG files from Finder onto the canvas,
+   or choose **File → Import Image…** (⌘I), or click **Import image…**. Each
+   picture becomes a layer. PNG transparency is kept. A copy goes into the
+   design's `images/` folder, so moving or deleting the original is fine.
+2. **Select** a layer by clicking it on the canvas or in the **Layers** list
+   (front-most at the top). A blue box with four corner handles appears.
+3. **Move:** drag the layer. **Resize:** drag a corner handle (the shape keeps
+   its proportions).
+4. **Forward / Back** change which layer is in front. **Delete** (or the ⌫ key) removes it.
+5. **Fill background:** with an image selected, tick **Fill background**. The
+   image then covers the whole 16:9 frame (edges may be cropped to fit) and
+   stays at the back. Only one image can be the background.
+6. **Text:** click **Add text**, type your words, pick a **Size** and color,
+   then drag the text into place (or resize it with its corners). It uses the
+   Mac's system font for now; your own fonts come with the brand kit.
+
+The selection box and handles only show on screen. They never appear in exports.
+
+### Export
+
+1. Type a **Design name** (best before importing, so pictures land in the right folder;
+   if you rename later, they're copied to the new folder when you export). It becomes the folder and file name, cleaned up:
    "My Video #1" turns into `my-video-1`.
 2. Pick a **Background color** with the color picker, or type a hex code such as `#e11d48`.
 3. Click **Export for YouTube**. For each variant you get two files in
@@ -169,8 +192,9 @@ Main files:
 | `app/preload.js` | The short list of things the window may ask for. |
 | `app/public/index.html` | The window's layout. |
 | `app/public/style.css` | The look (light and dark mode follow your Mac's setting). |
-| `app/public/js/main.js` | Connects buttons and fields to the design. |
-| `app/public/js/render.js` | Draws a thumbnail onto a canvas. |
+| `app/public/js/main.js` | Connects the panel, layers, import and export to the design. |
+| `app/public/js/render.js` | Draws a thumbnail (background, images, text) onto a canvas. |
+| `app/public/js/editor.js` | Mouse on the canvas: select, move, resize, selection handles. |
 | `app/public/js/export.js` | Makes the PNG and the under-2 MB JPG, names the files, saves them. |
 | `app/public/js/youtube-rules.js` | YouTube's size and format limits, in one place. |
 | `tests/e2e.js` | Automated test (for development; you don't need it). |

@@ -8,7 +8,7 @@
 
 'use strict';
 
-const { app, BrowserWindow, Menu, ipcMain, net, protocol, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, net, protocol, shell } = require('electron');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const files = require('./files');
@@ -38,6 +38,21 @@ function serveAppFiles() {
 ipcMain.handle('studio:info', () => ({ dataDir: files.dataDir(), version: app.getVersion() }));
 
 ipcMain.handle('studio:save-export', (_event, design, fileName, bytes) => files.saveExport(design, fileName, bytes));
+
+ipcMain.handle('studio:save-image', (_event, design, originalName, bytes) => files.saveImage(design, originalName, bytes));
+
+// File → Import Image… : let you pick PNG/JPG files, then hand their bytes to the window.
+ipcMain.handle('studio:choose-images', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win, {
+    title: 'Import images',
+    properties: ['openFile', 'multiSelections'],
+    filters: [{ name: 'Images (PNG, JPG)', extensions: ['png', 'jpg', 'jpeg'] }],
+  });
+  if (result.canceled) return [];
+  const fsp = require('fs/promises');
+  return Promise.all(result.filePaths.map(async (p) => ({ name: path.basename(p), bytes: await fsp.readFile(p) })));
+});
 
 ipcMain.handle('studio:reveal-exports', async (_event, design) => {
   const dir = files.exportsDir(design);
@@ -77,6 +92,14 @@ function buildMenu() {
     {
       label: 'File',
       submenu: [
+        {
+          id: 'import',
+          label: 'Import Image…',
+          accelerator: 'CmdOrCtrl+I',
+          // The window runs the import so the new layers land in the design.
+          click: (_item, win) => (win || BrowserWindow.getAllWindows()[0])?.webContents.send('menu:import'),
+        },
+        { type: 'separator' },
         { label: 'Show My Files in Finder', click: () => shell.openPath(files.dataDir()) },
         { type: 'separator' },
         { role: 'close' },

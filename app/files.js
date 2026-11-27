@@ -4,7 +4,7 @@
 //   ~/Documents/Thumbnail Studio/
 //     brand/            your logos, fonts and brand.json
 //     templates/        one .json file per template
-//     designs/<name>/   design.json, imported images, exports/
+//     designs/<name>/   design.json, images/ (copies of what you import), exports/
 //
 // This file only deals with folders and files; it knows nothing about windows.
 
@@ -56,4 +56,44 @@ async function saveExport(design, fileName, bytes) {
   return { saved: path.relative(dataDir(), target), bytes: buf.length };
 }
 
-module.exports = { dataDir, ensureDataFolders, isSafeName, isSafeFileName, exportsDir, saveExport };
+// What kind of image is this? Checked from the file's first bytes, not its
+// name, so a renamed file can't fool it. Returns 'png', 'jpg' or null.
+function imageType(buf) {
+  if (buf.length > 8 && buf.readUInt32BE(0) === 0x89504e47) return 'png';
+  if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
+  return null;
+}
+
+// "My Cat (final).PNG" → "my-cat-final"
+function cleanBaseName(original) {
+  const base = path.basename(String(original || '')).replace(/\.[^.]*$/, '');
+  return base.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'image';
+}
+
+// Copy an imported image into designs/<design>/images/, so the design keeps
+// working even if you move or delete the original. The bytes are copied
+// exactly, so PNG transparency is kept. If a file with the same name but
+// different content is already there, a number is added (cat-2.png).
+// Returns the path relative to the design folder, e.g. "images/cat.png".
+async function saveImage(design, originalName, bytes) {
+  if (!isSafeName(design)) throw new Error('Invalid design name');
+  const buf = Buffer.from(bytes);
+  const type = imageType(buf);
+  if (!type) throw new Error('Only PNG and JPG images can be imported');
+  const dir = path.join(dataDir(), 'designs', design, 'images');
+  await fsp.mkdir(dir, { recursive: true });
+  const base = cleanBaseName(originalName);
+  for (let n = 1; n < 1000; n++) {
+    const fileName = `${n === 1 ? base : `${base}-${n}`}.${type}`;
+    const target = path.join(dir, fileName);
+    let existing = null;
+    try { existing = await fsp.readFile(target); } catch {}
+    if (existing && !existing.equals(buf)) continue; // name taken by a different picture
+    if (!existing) await fsp.writeFile(target, buf);
+    return { file: `images/${fileName}` };
+  }
+  throw new Error('Too many images with the same name');
+}
+
+module.exports = { dataDir, ensureDataFolders, isSafeName, isSafeFileName, exportsDir, saveExport, saveImage, imageType };

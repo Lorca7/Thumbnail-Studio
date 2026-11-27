@@ -32,6 +32,9 @@
 
 * { box-sizing: border-box; }
 
+/* Anything marked hidden stays hidden, whatever its other styles say. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -132,3 +135,54 @@ button.primary {
 }
 .canvas-frame canvas { width: 100%; height: 100%; display: block; }
 .hint { color: var(--muted); font-size: 12px; }
+
+/* --- Layers panel (step 1.5) --- */
+.button-row { display: flex; gap: 6px; }
+.button-row button { flex: 1; padding: 7px 8px; }
+button:disabled { opacity: 0.45; cursor: default; }
+
+.layer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-height: 38px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.layer-list li {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.layer-list li:last-child { border-bottom: none; }
+.layer-list li.selected { background: var(--accent); color: var(--accent-text); }
+.layer-list .empty { color: var(--muted); cursor: default; }
+.layer-list .kind { opacity: 0.7; margin-right: 6px; }
+
+.check { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.inline { display: flex; gap: 6px; align-items: center; flex: 1; }
+.inline input { width: 90px; }
+input[type="number"] {
+  font: inherit; padding: 7px 9px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--bg); color: var(--text);
+}
+#text-color { width: 44px; height: 34px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+
+/* Canvas + drop target */
+.canvas-frame { position: relative; }
+.canvas-frame canvas { touch-action: none; }
+.drop-hint {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 18px;
+  border: 2px dashed rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+.drop-hint.show { display: flex; }
+.stage.dragging .drop-hint { display: flex; border-color: var(--accent); background: rgba(37, 99, 235, 0.15); color: #fff; }

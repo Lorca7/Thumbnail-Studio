@@ -11,7 +11,7 @@
 <body>
   <header class="topbar">
     <h1>Thumbnail Studio</h1>
-    <span class="step-note">Step 1: blank canvas and export</span>
+    <span class="step-note">Step 1.5: images, layers and text</span>
   </header>
 
   <main class="layout">
@@ -31,6 +31,36 @@
         </span>
       </label>
 
+      <!-- Layers: front-most at the top of the list -->
+      <section class="field">
+        <span>Layers</span>
+        <div class="button-row">
+          <button id="import-btn" title="Or drag PNG/JPG files onto the canvas (⌘I)">Import image…</button>
+          <button id="add-text-btn">Add text</button>
+        </div>
+        <ul id="layer-list" class="layer-list"></ul>
+        <div class="button-row">
+          <button id="forward-btn" title="Bring forward">Forward</button>
+          <button id="back-btn" title="Send back">Back</button>
+          <button id="delete-btn" title="Delete (⌫)">Delete</button>
+        </div>
+      </section>
+
+      <!-- Settings for the selected layer -->
+      <section id="image-props" class="field" hidden>
+        <label class="check"><input id="fill-bg" type="checkbox"> Fill background</label>
+        <small>Covers the whole 16:9 frame (edges may be cropped).</small>
+      </section>
+
+      <section id="text-props" class="field" hidden>
+        <span>Text</span>
+        <input id="text-value" type="text" autocomplete="off">
+        <span class="color-row">
+          <label class="inline">Size <input id="text-size" type="number" min="20" max="2000" step="10"></label>
+          <input id="text-color" type="color">
+        </span>
+      </section>
+
       <button id="export-btn" class="primary">Export for YouTube</button>
       <button id="reveal-btn">Open exports folder</button>
 
@@ -39,12 +69,13 @@
       <p class="data-dir">Your files: <code id="data-dir"></code></p>
     </aside>
 
-    <!-- Center: live preview of the thumbnail (16:9) -->
-    <section class="stage">
+    <!-- Center: the thumbnail (16:9). Drop images here. -->
+    <section id="stage" class="stage">
       <div class="canvas-frame">
         <canvas id="preview" width="1280" height="720"></canvas>
+        <div id="drop-hint" class="drop-hint">Drop PNG or JPG images here</div>
       </div>
-      <p class="hint">Preview, scaled down. Exports are 3840 × 2160.</p>
+      <p class="hint">Click a layer to select it · drag to move · drag a corner to resize · ⌫ deletes. Exports are 3840 × 2160.</p>
     </section>
   </main>
 
