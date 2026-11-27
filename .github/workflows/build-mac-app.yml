@@ -1,4 +1,4 @@
-# Builds "Thumbnail Studio.app" on a Mac in GitHub's cloud (macOS 14 Sonoma),
+# Builds "Thumbnail Studio.app" on a Mac in GitHub's cloud (runs on macOS 12 and later),
 # tests it, and keeps the finished app as a private download on the run's page
 # (Actions tab → latest "Build Mac app" run → Artifacts). Nothing is published.
 
@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
