@@ -1,8 +1,11 @@
-# Your own files: logos, fonts, colors, templates, designs, exports.
-# Never committed to the repository.
+# Your own files live in Documents/Thumbnail Studio, outside this folder.
+# This line is a safety net in case a user-data folder is ever made here.
 user-data/
+
+# Downloaded building blocks and built apps (made by the Install file)
+node_modules/
+dist/
 
 # macOS and editor clutter
 .DS_Store
-node_modules/
 *.log

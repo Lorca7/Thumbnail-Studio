@@ -1,13 +1,17 @@
 {
   "name": "thumbnail-studio",
-  "version": "0.1.0",
+  "productName": "Thumbnail Studio",
+  "version": "0.2.0",
   "private": true,
-  "description": "Local tool for assembling, checking and exporting YouTube thumbnails.",
+  "description": "Mac app for assembling, checking and exporting YouTube thumbnails.",
+  "main": "app/main.js",
   "scripts": {
-    "start": "node app/server.js --open",
+    "start": "electron .",
+    "build-mac": "node scripts/build-mac.js",
     "test": "node tests/e2e.js"
   },
-  "engines": {
-    "node": ">=18"
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "45.4.1"
   }
 }

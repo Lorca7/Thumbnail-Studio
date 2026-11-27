@@ -60,13 +60,10 @@ export async function makeJpgUnderLimit(canvas, maxBytes = YOUTUBE.mobileMaxByte
   throw new Error('Could not get the JPG under the size limit');
 }
 
-// Send one finished file to the local server, which saves it to disk.
+// Hand one finished file to the app, which saves it to disk
+// (see app/preload.js and app/main.js).
 async function saveExport(designName, fileName, blob) {
-  const params = new URLSearchParams({ design: designName, file: fileName });
-  const res = await fetch(`/api/export?${params}`, { method: 'POST', body: blob });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Saving failed');
-  return data;
+  return window.studio.saveExport(designName, fileName, await blob.arrayBuffer());
 }
 
 // Export one variant: master PNG + phone-safe JPG. Returns a summary.

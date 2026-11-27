@@ -1,0 +1,52 @@
+# Builds "Thumbnail Studio.app" on a Mac in GitHub's cloud (runs on macOS 12 and later),
+# tests it, and keeps the finished app as a private download on the run's page
+# (Actions tab → latest "Build Mac app" run → Artifacts). Nothing is published.
+
+name: Build Mac app
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  workflow_dispatch: # lets you start a build by hand from the Actions tab
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download building blocks
+        run: npm ci --no-audit --no-fund
+
+      # One app that runs on both Apple silicon and Intel Macs.
+      - name: Build the app
+        run: node scripts/build-mac.js universal
+
+      - name: Check the app's signature
+        run: codesign --verify --deep --strict --verbose=2 "dist/Thumbnail Studio-darwin-universal/Thumbnail Studio.app"
+
+      - name: Test the built app
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.63.0
+          PACKAGED_APP="dist/Thumbnail Studio-darwin-universal/Thumbnail Studio.app/Contents/MacOS/Thumbnail Studio" \
+            node tests/e2e.js screenshots
+
+      - name: Zip the app
+        run: ditto -c -k --keepParent "dist/Thumbnail Studio-darwin-universal/Thumbnail Studio.app" "Thumbnail Studio.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Thumbnail-Studio-Mac-app
+          path: Thumbnail Studio.zip
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: screenshots/
+          retention-days: 30

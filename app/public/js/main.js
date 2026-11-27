@@ -71,8 +71,16 @@ $('export-btn').addEventListener('click', async () => {
 
 // --- Open the exports folder in Finder ---
 $('reveal-btn').addEventListener('click', async () => {
-  const res = await fetch(`/api/reveal?design=${encodeURIComponent(currentSlug())}`, { method: 'POST' });
-  if (!res.ok) setStatus('<span class="error">Could not open the folder.</span>');
+  try {
+    await window.studio.revealExports(currentSlug());
+  } catch {
+    setStatus('<span class="error">Could not open the folder.</span>');
+  }
+});
+
+// Show where files are saved.
+window.studio.info().then((info) => {
+  $('data-dir').textContent = info.dataDir;
 });
 
 redraw();
