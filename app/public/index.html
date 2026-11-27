@@ -11,42 +11,226 @@
 <body>
   <header class="topbar">
     <h1>Thumbnail Studio</h1>
-    <span class="step-note">Step 1: blank canvas and export</span>
+    <nav class="tabs" id="tabs">
+      <button data-view="home">Designs</button>
+      <button data-view="editor">Editor</button>
+      <button data-view="brand">Brand kit</button>
+      <button data-view="templates">Templates</button>
+      <button data-view="lab">Lab</button>
+    </nav>
+    <span id="doc-title" class="doc-title"></span>
+    <span id="save-state" class="save-state"></span>
   </header>
 
-  <main class="layout">
-    <!-- Left: settings for this design -->
-    <aside class="panel">
-      <label class="field">
-        <span>Design name</span>
-        <input id="design-name" type="text" value="my first thumbnail" autocomplete="off">
-        <small>Saved as: <code id="design-slug"></code></small>
-      </label>
+  <!-- ===================== Designs (home) ===================== -->
+  <section id="view-home" class="view page">
+    <div class="page-head">
+      <h2>Your designs</h2>
+      <button id="new-design-btn" class="primary">New thumbnail…</button>
+    </div>
+    <div id="design-list" class="card-grid"></div>
+    <p class="muted small">Your files: <code id="data-dir"></code> · <a href="#" id="reveal-data">Show in Finder</a></p>
+  </section>
 
-      <label class="field">
-        <span>Background color</span>
-        <span class="color-row">
-          <input id="bg-color" type="color" value="#1e293b">
-          <input id="bg-hex" type="text" value="#1e293b" maxlength="7" spellcheck="false">
-        </span>
-      </label>
+  <!-- ===================== Editor ===================== -->
+  <section id="view-editor" class="view editor-layout">
+    <aside class="panel" id="editor-panel">
+      <div id="editor-empty" class="muted">Open a design from <b>Designs</b>, or start a new one.</div>
 
-      <button id="export-btn" class="primary">Export for YouTube</button>
-      <button id="reveal-btn">Open exports folder</button>
+      <div id="editor-main">
+        <!-- Template-only header -->
+        <div id="template-head" class="field">
+          <span>Template name</span>
+          <input id="template-name" type="text" autocomplete="off">
+          <button id="template-done">← Back to templates</button>
+        </div>
 
-      <div id="status" class="status" role="status" aria-live="polite"></div>
+        <label class="field">
+          <span>Background color</span>
+          <span class="color-row" id="bg-color-row"></span>
+        </label>
 
-      <p class="data-dir">Your files: <code id="data-dir"></code></p>
+        <label class="check"><input id="corner-mark-toggle" type="checkbox"> Corner mark <small class="muted" id="corner-mark-note"></small></label>
+        <label class="check"><input id="zone-toggle" type="checkbox" checked> Show the video-length corner</label>
+
+        <section class="field">
+          <span>Layers</span>
+          <div class="button-row">
+            <button id="add-image-btn" title="Or drag PNG/JPG files onto the canvas (⌘I)">Image…</button>
+            <button id="add-text-btn">Text</button>
+            <button id="add-logo-btn">Logo</button>
+          </div>
+          <ul id="layer-list" class="layer-list"></ul>
+          <div class="button-row">
+            <button id="forward-btn" title="Bring forward">Forward</button>
+            <button id="back-btn" title="Send back">Back</button>
+            <button id="delete-btn" title="Delete (⌫)">Delete</button>
+          </div>
+        </section>
+
+        <!-- Settings for the selected layer (filled in by editor-view.js) -->
+        <section id="layer-props" class="props"></section>
+      </div>
     </aside>
 
-    <!-- Center: live preview of the thumbnail (16:9) -->
-    <section class="stage">
-      <div class="canvas-frame">
-        <canvas id="preview" width="1280" height="720"></canvas>
+    <section id="stage" class="stage">
+      <div id="variant-bar" class="variant-bar">
+        <div id="variant-tabs" class="segmented"></div>
+        <button id="dup-variant-btn">Duplicate variant</button>
+        <button id="del-variant-btn">Delete variant</button>
+        <label class="check"><input id="compare-toggle" type="checkbox"> Side by side</label>
+        <span class="spacer"></span>
+        <button id="undo-btn" title="Undo (⌘Z)">Undo</button>
+        <button id="redo-btn" title="Redo (⇧⌘Z)">Redo</button>
       </div>
-      <p class="hint">Preview, scaled down. Exports are 3840 × 2160.</p>
+
+      <div id="canvas-wrap" class="canvas-wrap">
+        <div class="canvas-frame">
+          <canvas id="preview" width="1280" height="720"></canvas>
+          <div id="drop-hint" class="drop-hint">Drop PNG or JPG images here</div>
+        </div>
+      </div>
+      <div id="compare-grid" class="compare-grid" hidden></div>
+
+      <div id="warnings" class="warnings"></div>
+      <p class="hint">Drag to move (snaps to center and edges; hold ⌥ to move freely) · corners resize · round handle rotates (⇧ for 15° steps) · ⌫ deletes · ⌘Z undo</p>
+
+      <div id="export-bar" class="export-bar">
+        <button id="export-btn" class="primary">Export all variants for YouTube</button>
+        <button id="reveal-btn">Open exports folder</button>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </div>
     </section>
-  </main>
+  </section>
+
+  <!-- ===================== Brand kit ===================== -->
+  <section id="view-brand" class="view page">
+    <div class="page-head"><h2>Brand kit</h2><span class="muted">Your logos, colors, fonts and text styles. Saved in <code>brand/</code> as you go.</span></div>
+
+    <div class="brand-section">
+      <div class="section-head"><h3>Logos</h3><button id="add-logos-btn">Add logos…</button></div>
+      <div id="logo-list" class="card-grid small-cards"></div>
+    </div>
+
+    <div class="brand-section">
+      <div class="section-head"><h3>Colors</h3></div>
+      <div class="color-row add-color">
+        <input id="new-color" type="color" value="#ff3b30">
+        <input id="new-color-hex" type="text" value="#ff3b30" maxlength="7" spellcheck="false">
+        <input id="new-color-name" type="text" placeholder="Name (e.g. Main red)">
+        <button id="add-color-btn">Add color</button>
+      </div>
+      <div id="color-list" class="swatch-list"></div>
+    </div>
+
+    <div class="brand-section">
+      <div class="section-head"><h3>Fonts</h3><button id="add-fonts-btn">Add fonts…</button></div>
+      <div id="font-list" class="font-list"></div>
+    </div>
+
+    <div class="brand-section">
+      <div class="section-head"><h3>Text styles</h3><button id="add-style-btn">New text style</button></div>
+      <div id="style-list" class="style-list"></div>
+    </div>
+
+    <div class="brand-section">
+      <div class="section-head"><h3>Corner mark</h3></div>
+      <p class="muted small">One of your logos, placed in the same corner of every template that has "Corner mark" ticked. It stays locked unless you unlock it in a design.</p>
+      <div class="corner-mark-grid">
+        <div class="form-grid">
+          <label class="check"><input id="cm-enabled" type="checkbox"> Use a corner mark</label>
+          <label>Logo <select id="cm-logo"></select></label>
+          <label>Corner <select id="cm-corner">
+            <option value="tl">Top left</option><option value="tr">Top right</option>
+            <option value="bl">Bottom left</option><option value="br">Bottom right (covered by video length!)</option>
+          </select></label>
+          <label>Width (px at 3840) <input id="cm-size" type="number" min="40" max="1600" step="10"></label>
+          <label>Margin (px) <input id="cm-margin" type="number" min="0" max="600" step="5"></label>
+          <div id="cm-warning" class="warn small"></div>
+        </div>
+        <canvas id="cm-preview" width="480" height="270" class="mini-canvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Templates ===================== -->
+  <section id="view-templates" class="view page">
+    <div class="page-head">
+      <h2>Templates</h2>
+      <button id="new-template-btn" class="primary">New template</button>
+    </div>
+    <p class="muted small">A template is a 16:9 layout with named slots (images, text, logos). Lock what should stay consistent; leave the rest free. Start a new thumbnail from it under <b>Designs</b>.</p>
+    <div id="template-list" class="card-grid"></div>
+  </section>
+
+  <!-- ===================== Lab ===================== -->
+  <section id="view-lab" class="view page">
+    <div id="lab-empty" class="muted">Open a design first, then come back to check it here.</div>
+    <div id="lab-main">
+      <div class="page-head"><h2>Lab</h2><span class="muted" id="lab-design-name"></span></div>
+
+      <div class="brand-section">
+        <h3>Title</h3>
+        <div class="title-row">
+          <input id="lab-title" type="text" placeholder="Type the video title…" autocomplete="off">
+          <span id="lab-title-count" class="muted"></span>
+          <label class="inline small">Warn above <input id="lab-title-limit" type="number" min="20" max="100"> characters</label>
+        </div>
+        <div id="lab-title-warn" class="warn"></div>
+        <div id="lab-pairing"></div>
+      </div>
+
+      <div class="brand-section">
+        <div class="section-head">
+          <h3>Feed preview</h3>
+          <div class="segmented" id="lab-mode">
+            <button data-mode="light" class="on">Light</button><button data-mode="dark">Dark</button>
+          </div>
+          <button id="lab-add-shots">Add comparison screenshots…</button>
+          <button id="lab-clear-shots">Remove screenshots</button>
+        </div>
+        <p class="muted small">Approximate YouTube sizes (desktop home, phone, sidebar). The gray tiles stand in for other videos; your comparison screenshots replace them. They stay private in <code>lab/</code>.</p>
+        <div id="lab-feed"></div>
+      </div>
+
+      <div class="brand-section">
+        <h3>Title cutoffs</h3>
+        <div id="lab-cutoffs"></div>
+      </div>
+
+      <div class="brand-section">
+        <h3>Squint test</h3>
+        <p class="muted small">Blurred, tiny and grayscale. If the idea still reads, it'll work in the feed.</p>
+        <div id="lab-squint"></div>
+      </div>
+
+      <div class="brand-section">
+        <div class="section-head">
+          <h3>Series wall</h3>
+          <label class="inline small">Template <select id="wall-filter"></select></label>
+        </div>
+        <p class="muted small">Your exported thumbnails side by side, to check they look like one series.</p>
+        <div id="lab-wall" class="wall"></div>
+      </div>
+
+      <div class="brand-section">
+        <div class="section-head"><h3>Channel icon check</h3><button id="lab-icon-btn">Choose channel icon…</button></div>
+        <div id="lab-icon"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- A reusable pop-up for questions like "Name for the new thumbnail?" -->
+  <dialog id="dialog">
+    <form method="dialog" id="dialog-form">
+      <h3 id="dialog-title"></h3>
+      <div id="dialog-fields"></div>
+      <div class="button-row end">
+        <button value="cancel" formnovalidate>Cancel</button>
+        <button value="ok" class="primary" id="dialog-ok">OK</button>
+      </div>
+    </form>
+  </dialog>
 
   <script type="module" src="js/main.js"></script>
 </body>

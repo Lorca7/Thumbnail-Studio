@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "id": "example-image-and-title",
+  "name": "Example: image + title",
+  "background": {
+    "color": "#1f2937"
+  },
+  "cornerMark": true,
+  "layers": [
+    {
+      "id": "slot-image",
+      "type": "image",
+      "slot": "Main image",
+      "file": null,
+      "x": 1960,
+      "y": 180,
+      "w": 1680,
+      "h": 1440,
+      "rotation": 0,
+      "fill": false,
+      "pixelArt": false,
+      "hidden": false,
+      "locks": {
+        "position": true,
+        "size": true,
+        "style": false
+      }
+    },
+    {
+      "id": "slot-title",
+      "type": "text",
+      "slot": "Title",
+      "text": "THREE BIG\nWORDS",
+      "font": "Anton",
+      "size": 300,
+      "color": "#ffffff",
+      "outline": {
+        "width": 14,
+        "color": "#000000"
+      },
+      "shadow": {
+        "blur": 0,
+        "x": 14,
+        "y": 14,
+        "color": "#000000"
+      },
+      "allCaps": true,
+      "letterSpacing": 0,
+      "align": "left",
+      "x": 180,
+      "y": 560,
+      "rotation": 0,
+      "hidden": false,
+      "locks": {
+        "position": false,
+        "size": false,
+        "style": true
+      }
+    }
+  ]
+}

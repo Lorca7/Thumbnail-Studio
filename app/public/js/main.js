@@ -1,86 +1,81 @@
-// Main page script: connects the buttons and fields to the design data.
+// Start-up: load your brand kit, settings and templates, set up each
+// screen, and reopen the design you were last working on.
 
-import { renderVariant } from './render.js';
-import { cleanDesignName, exportAll } from './export.js';
+import { $ } from './util.js';
+import { state, on, undo, redo, loadBrandAndSettings, loadTemplates, openDesign, flushAllSync } from './store.js';
+import { loadBuiltInFonts } from './assets.js';
+import { initEditor, refresh as refreshEditor, exportDesign } from './views/editor-view.js';
+import { initHome, renderHome } from './views/home.js';
+import { initBrand, renderBrand } from './views/brand.js';
+import { initTemplates, renderTemplates } from './views/templates.js';
+import { initLab, renderLab } from './views/lab.js';
+import { setSaveState } from './ui.js';
 
-const $ = (id) => document.getElementById(id);
+const VIEWS = ['home', 'editor', 'brand', 'templates', 'lab'];
+let current = 'home';
 
-// The design being edited. Later steps load and autosave this as
-// user-data/designs/<name>/design.json; in step 1 it lives in memory.
-const design = {
-  name: 'my first thumbnail',
-  variants: [{ id: 'A', background: { color: '#1e293b' }, layers: [] }],
-};
-
-function currentSlug() {
-  return cleanDesignName(design.name);
+// Switch screens (the tabs at the top).
+export function showView(name) {
+  current = name;
+  for (const v of VIEWS) $(`view-${v}`).hidden = v !== name;
+  document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.view === name));
+  if (name === 'home') renderHome();
+  if (name === 'editor') refreshEditor();
+  if (name === 'brand') renderBrand();
+  if (name === 'templates') renderTemplates();
+  if (name === 'lab') renderLab();
 }
 
-function redraw() {
-  renderVariant($('preview'), design.variants[0]);
-  $('design-slug').textContent = currentSlug();
-}
+// Let the automated test look at the app's state (harmless otherwise).
+window.__studio = { state, showView };
 
-function setStatus(html) {
-  $('status').innerHTML = html;
-}
-
-function formatBytes(n) {
-  return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(2)} MB` : `${Math.round(n / 1000)} KB`;
-}
-
-// --- Design name ---
-$('design-name').addEventListener('input', (e) => {
-  design.name = e.target.value;
-  redraw();
-});
-
-// --- Background color (picker and hex box stay in sync) ---
-function setBackground(hex) {
-  design.variants[0].background.color = hex;
-  $('bg-color').value = hex;
-  $('bg-hex').value = hex;
-  redraw();
-}
-$('bg-color').addEventListener('input', (e) => setBackground(e.target.value));
-$('bg-hex').addEventListener('change', (e) => {
-  let hex = e.target.value.trim();
-  if (!hex.startsWith('#')) hex = `#${hex}`;
-  if (/^#[0-9a-fA-F]{6}$/.test(hex)) setBackground(hex.toLowerCase());
-  else e.target.value = design.variants[0].background.color; // undo a typo
-});
-
-// --- Export ---
-$('export-btn').addEventListener('click', async () => {
-  const btn = $('export-btn');
-  btn.disabled = true;
-  setStatus('Exporting…');
-  try {
-    const results = await exportAll(currentSlug(), design.variants);
-    const items = results.flatMap((r) => [
-      `<li><code>${r.png.name}</code> — ${r.png.width}×${r.png.height}, ${formatBytes(r.png.bytes)}</li>`,
-      `<li><code>${r.jpg.name}</code> — ${r.jpg.width}×${r.jpg.height}, ${formatBytes(r.jpg.bytes)}</li>`,
-    ]);
-    setStatus(`<span class="ok">Saved to designs/${currentSlug()}/exports/</span><ul>${items.join('')}</ul>`);
-  } catch (err) {
-    setStatus(`<span class="error">Export failed: ${err.message}</span>`);
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-// --- Open the exports folder in Finder ---
-$('reveal-btn').addEventListener('click', async () => {
-  try {
-    await window.studio.revealExports(currentSlug());
-  } catch {
-    setStatus('<span class="error">Could not open the folder.</span>');
-  }
-});
-
-// Show where files are saved.
-window.studio.info().then((info) => {
+async function start() {
+  await loadBuiltInFonts().catch(() => {});
+  const failedFonts = await loadBrandAndSettings();
+  await loadTemplates();
+  const info = await window.studio.info();
   $('data-dir').textContent = info.dataDir;
-});
 
-redraw();
+  initEditor();
+  initHome(showView);
+  initBrand();
+  initTemplates(showView);
+  initLab(() => current === 'lab');
+
+  $('tabs').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-view]');
+    if (b) showView(b.dataset.view);
+  });
+
+  // Menu bar: Undo/Redo act on text boxes while typing, otherwise on the design.
+  const typing = () => ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+  window.studio.onMenu('undo', () => (typing() ? document.execCommand('undo') : undo()));
+  window.studio.onMenu('redo', () => (typing() ? document.execCommand('redo') : redo()));
+  window.studio.onMenu('export', () => { if (state.kind === 'design') exportDesign(); });
+
+  // "Saving… / Saved" in the top bar.
+  on('saving', () => setSaveState('Saving…'));
+  on('saved', (r) => setSaveState(r.ok ? 'All changes saved' : `Couldn't save: ${r.error}`));
+  on('change', () => { if (current === 'lab') renderLab(); });
+
+  // Never lose the last few changes when the window closes.
+  window.addEventListener('beforeunload', flushAllSync);
+
+  // Dropping a file outside the canvas does nothing (instead of opening it).
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => e.preventDefault());
+
+  if (failedFonts.length) setSaveState(`Some fonts couldn't be loaded: ${failedFonts.join(', ')}`);
+
+  // Reopen the last design, if it still exists.
+  if (state.settings.lastDesign) {
+    try {
+      await openDesign(state.settings.lastDesign);
+      showView('editor');
+      return;
+    } catch { /* it was deleted or renamed outside the app */ }
+  }
+  showView('home');
+}
+
+start();

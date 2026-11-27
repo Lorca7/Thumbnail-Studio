@@ -67,8 +67,9 @@ async function saveExport(designName, fileName, blob) {
 }
 
 // Export one variant: master PNG + phone-safe JPG. Returns a summary.
-export async function exportVariant(designName, variant, date = new Date()) {
-  const canvas = renderFullSize(variant);
+// `opts` are the drawing options (see renderVariant in render.js).
+export async function exportVariant(designName, variant, opts, date = new Date()) {
+  const canvas = renderFullSize(variant, opts);
 
   const png = await canvasToBlob(canvas, 'image/png');
   const pngName = exportFileName(designName, variant.id, 'png', date);
@@ -86,9 +87,9 @@ export async function exportVariant(designName, variant, date = new Date()) {
 }
 
 // Export every variant of a design, one after the other.
-export async function exportAll(designName, variants) {
+export async function exportAll(designName, variants, opts) {
   const date = new Date(); // same date stamp for the whole batch
   const results = [];
-  for (const variant of variants) results.push(await exportVariant(designName, variant, date));
+  for (const variant of variants) results.push(await exportVariant(designName, variant, opts, date));
   return results;
 }

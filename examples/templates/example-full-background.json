@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "id": "example-full-background",
+  "name": "Example: full background + caption",
+  "background": { "color": "#111827" },
+  "cornerMark": true,
+  "layers": [
+    {
+      "id": "slot-background", "type": "image", "slot": "Background", "file": null,
+      "x": 0, "y": 0, "w": 3840, "h": 2160, "rotation": 0,
+      "fill": true, "pixelArt": false, "hidden": false,
+      "locks": { "position": true, "size": true, "style": false }
+    },
+    {
+      "id": "slot-caption", "type": "text", "slot": "Caption", "text": "CAPTION HERE",
+      "font": "Bebas Neue", "size": 340, "color": "#ffffff",
+      "outline": { "width": 16, "color": "#000000" },
+      "shadow": { "blur": 30, "x": 0, "y": 10, "color": "#000000" },
+      "allCaps": true, "letterSpacing": 8, "align": "left",
+      "x": 180, "y": 1480, "rotation": 0, "hidden": false,
+      "locks": { "position": false, "size": false, "style": true }
+    }
+  ]
+}
