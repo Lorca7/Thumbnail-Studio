@@ -1,6 +1,10 @@
 # Examples
 
-Neutral starter assets that ship with the app so it works on first run
-(a generic sample logo, plain starter layouts, open-license fonts).
-They arrive with steps 2 and 3. You can delete anything in here; your own
-logos, fonts, colors and templates go in `user-data/`, not here.
+Neutral starter files that ship with the app so it works on first run:
+
+- `brand/sample-logo.png`: a generic placeholder logo (a gray circle mark)
+- `templates/*.json`: two plain starter layouts
+
+The first time the app starts, it copies these into your own folder
+(`Documents/Thumbnail Studio/brand/logos` and `.../templates`). After that they're
+yours to change or delete inside the app. Nothing here is anyone's branding.

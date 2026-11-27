@@ -1,7 +1,7 @@
 {
   "name": "thumbnail-studio",
   "productName": "Thumbnail Studio",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Mac app for assembling, checking and exporting YouTube thumbnails.",
   "main": "app/main.js",
