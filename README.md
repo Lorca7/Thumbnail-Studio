@@ -16,79 +16,54 @@ anything.
 
 ## Set up on my Mac
 
-You do this once. Written for macOS Sonoma 14.6. It needs the internet while
-installing; after that the app works offline.
+No installers, no Terminal. Written for macOS Sonoma 14.6. The app works on
+both Apple silicon and Intel Macs, and works offline.
 
-### 1. Install Node.js (needed only for installing and updating)
+### 1. Download the app
 
-1. Go to **<https://nodejs.org/en/download>**.
-2. Choose the version marked **LTS** and download the **macOS Installer (.pkg)**.
-3. Open the downloaded file and click through the installer (Continue → Agree → Install).
-   It asks for your Mac password, which is normal.
+1. Open **<https://github.com/Lorca7/Thumbnail-Studio/actions/workflows/build-mac-app.yml>**
+   (sign in to GitHub if asked; the repository is private).
+2. Click the top run in the list (the newest one with a green ✓).
+3. Scroll down to **Artifacts** and click **Thumbnail-Studio-Mac-app**. It's about 220 MB.
+4. In your **Downloads** folder, double-click the zip. If you get another zip
+   (**Thumbnail Studio.zip**), double-click that too, until you see the
+   **Thumbnail Studio** app icon.
 
-### 2. Get the Thumbnail Studio folder onto your Mac
+### 2. Put it in Applications
 
-With **GitHub Desktop** (recommended, because updates are then two clicks):
+Drag **Thumbnail Studio** into your **Applications** folder (in Finder's sidebar).
 
-1. Download **GitHub Desktop** from **<https://desktop.github.com/>**, open the
-   zip, and drag **GitHub Desktop** into your **Applications** folder. Open it
-   and sign in with your GitHub account.
-2. Choose **File → Clone Repository…**, pick **thumbnail-studio** from the list,
-   and choose where to put it (for example your **Documents/GitHub** folder). Click **Clone**.
-3. Choose **Repository → Show in Finder**. You'll see a folder called **thumbnail-studio**.
+### 3. Open it the first time
 
-Or, from a **zip file**: unzip it and move the **thumbnail-studio** folder
-somewhere handy, such as Documents.
+Because the app isn't from the App Store, macOS asks you to confirm once:
 
-### 3. Install the app
+1. In **Applications**, **right-click** (or Control-click) **Thumbnail Studio** and choose **Open**.
+2. Click **Open** in the dialog.
 
-In the thumbnail-studio folder, double-click **`Install Thumbnail Studio.command`**.
+If there's no **Open** button: open **System Settings → Privacy & Security**,
+scroll down to the message about Thumbnail Studio, click **Open Anyway**, and
+open the app again.
 
-A Terminal window opens and works for a few minutes. It downloads the
-building blocks (about 100 MB), builds the app for your Mac, and puts
-**Thumbnail Studio** in your **Applications** folder. Then it opens the app.
-When it says **Done!**, you can close the Terminal window.
-
-From then on, open **Thumbnail Studio** like any other app: from
-Applications, Launchpad or Spotlight. Right-click its Dock icon →
-**Options → Keep in Dock** to keep it handy.
+After that, open it like any other app: from Applications, Launchpad or
+Spotlight. While it's open, right-click its Dock icon → **Options → Keep in Dock**.
 
 The first time the app saves something, macOS may ask whether
 **Thumbnail Studio may access files in your Documents folder**. Click **Allow**.
 That's where it keeps your files.
 
-### If macOS blocks the Install file
-
-If you see *"cannot be opened because Apple cannot check it for malicious
-software"* or *"unidentified developer"* (most likely if you used the zip):
-
-1. Click **Done** (or **OK**).
-2. **Right-click** (or Control-click) `Install Thumbnail Studio.command` and choose **Open**.
-3. Click **Open** in the dialog. macOS remembers this, so you only do it once.
-
-If there's no **Open** button: open **System Settings → Privacy & Security**,
-scroll down to the message about the file, click **Open Anyway**, then
-double-click it again.
-
-If double-clicking opens the file in a text editor, or Terminal says
-**"permission denied"**: open **Terminal** (Applications → Utilities), type
-`chmod +x ` (with a space at the end), drag the Install file into the Terminal
-window, and press Return. Then double-click it again.
-
-If a window says **Node.js is not installed**, go back to step 1.
-
-The app you install is built on your own Mac, so macOS opens it without
-these warnings.
-
 ### Getting updates
 
-When a new version is ready:
+Every time the code changes, GitHub builds a fresh copy of the app. To update,
+repeat steps 1 to 3 and choose **Replace** when Finder asks. Your own files are
+never touched by updates.
 
-1. In GitHub Desktop, click **Fetch origin**, then **Pull origin**. (Or unzip the new zip.)
-2. Double-click **`Install Thumbnail Studio.command`** again. It replaces the
-   app in Applications with the new version.
+### Other way: build it on your Mac
 
-Your own files are never touched by updates.
+If you'd rather build the app yourself: install Node.js (the **LTS**
+**macOS Installer** from <https://nodejs.org/en/download>), get this folder
+onto your Mac (GitHub Desktop or a zip), and double-click
+**`Install Thumbnail Studio.command`**. It builds the app and puts it in
+Applications. If macOS blocks that file, right-click it and choose **Open**.
 
 ---
 
@@ -177,16 +152,17 @@ When you export, the window draws the full-size picture and turns it into
 PNG and JPG files. The main process then saves them in the design's
 `exports/` folder.
 
-**Why Node.js is needed to install:** the Install file uses Node.js and its
-package tool (npm) to download Electron and assemble the app on your Mac.
-Building it on your Mac means macOS trusts it without warnings. The finished
-app contains everything it needs and doesn't use Node.js or the internet.
+**How the app gets built:** every time the code changes, GitHub builds the
+app on one of its Macs (`.github/workflows/build-mac-app.yml`). It runs the
+automated test on the finished app and keeps it as a private download in this
+repository. The app contains everything it needs and doesn't use the internet.
 
 Main files:
 
 | File | What it does |
 |---|---|
-| `Install Thumbnail Studio.command` | Builds the app and puts it in Applications. |
+| `.github/workflows/build-mac-app.yml` | GitHub builds, tests and stores the Mac app. |
+| `Install Thumbnail Studio.command` | Alternative: builds the app on your Mac and puts it in Applications. |
 | `scripts/build-mac.js` | The build recipe used by the Install file. |
 | `app/main.js` | Main process: window, menu, saving files. |
 | `app/files.js` | Where your files live, and safe saving. |
